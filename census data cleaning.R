@@ -77,5 +77,15 @@ employ_ac_2011 <- df_2011 %>%
          education == "Total - Highest certificate, diploma or degree"
   )
 
+african_employ <- df_2011 %>% 
+  filter(as.integer(birthplace) == 2:7,
+         labour == "Employment rate (%)",
+         education == "Total - Highest certificate, diploma or degree")
 
+african_employ_2011 <- df_2011 %>%
+  filter(as.integer(birthplace) == 2:7,
+       labour == "Employment rate (%)")
 
+african_employ_2021 <- df_2021 %>% 
+  filter(as.integer(birthplace) == 2:7,
+         labour == "Employment rate (%)")
