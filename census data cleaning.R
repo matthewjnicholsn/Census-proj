@@ -2,6 +2,7 @@ rm(list = ls())
 library(tidyr)
 library(dplyr)
 library(ggplot2)
+library(stringr)
 
 
 
@@ -14,6 +15,11 @@ for(i in seq_along(data)) {
   # read file
   df <- read.csv(data[i])
   
+  
+  
+  df <- df %>% 
+    mutate_if(is.character, ~ iconv(., from = "UTF-8", to = "UTF-8"))
+  
   # rename vars
   if (year == "2011") {
     df <- df %>% 
@@ -24,7 +30,16 @@ for(i in seq_along(data)) {
       rename(education = Highest.certif) %>% 
       mutate(year = as.numeric(year)) %>% 
       mutate(counts = as.numeric(counts)) %>% 
-      mutate(birthplace = as.factor(birthplace))
+      mutate(birthplace = as.factor(birthplace)) %>% 
+      mutate(birthplace = as.factor(birthplace)) %>% 
+      filter(!str_detect(labour, "Total"))
+    
+    #trying to remove the non printable characters
+    df$labour <- gsub("[^[:print:]]", "", df$labour)
+    df <- df %>% 
+      pivot_wider(names_from = labour, values_from = counts, 
+                  values_fill = list(counts = 0))
+    
   } else if (year == "2021") {
     df <- df %>% 
       rename(gender = Gender..3.) %>%  # different naming for 2021
@@ -34,7 +49,19 @@ for(i in seq_along(data)) {
       rename(education = Highest.certific) %>% 
       mutate(year = as.numeric(year)) %>% 
       mutate(counts = as.numeric(counts)) %>% 
-      mutate(birthplace = as.factor(birthplace))
+      mutate(birthplace = as.factor(birthplace)) %>% 
+      filter(!str_detect(labour, "Total"))
+    
+    #trying to remove the non printable characters
+    df$labour <- gsub("[^[:print:]]", "", df$labour)
+    df <- df %>% 
+      pivot_wider(names_from = labour, values_from = counts, 
+                  values_fill = list(counts = 0)) %>% 
+      mutate(education = ifelse(is.na(education),"  Bachelor's degree or higher",
+                                education)) #this is to fix the NA's by coercion error
+    
+    
+    
   }
   
   # give df a year
@@ -43,49 +70,10 @@ for(i in seq_along(data)) {
 # combine, may not actually prove useful
 df_comb <- bind_rows(df_2011, df_2021)
 
-#convert chr var to factors
-
-
-#get some summary stats
-employ_2011 <- df_2011 %>% 
-  filter(birthplace == "7",
-         gender == "Total - Sex",
-         labour == "Employment rate (%)",
+#get some summary tables
+employ_stats <- df_comb %>% 
+  select(1:4, 9:11) %>% 
+  filter(as.integer(birthplace) == 4:9,
          education == "Total - Highest certificate, diploma or degree")
-employ_2021 <- df_2021 %>% 
-  filter(birthplace == "    Africa",
-           gender == "Total - Gender",
-           labour == "Employment rate (%)",
-           education == "Total - Highest certificate, diploma or degree")
-employ_canada_2011 <- df_2011 %>% 
-  filter(birthplace == "  Born in Canada",
-         gender == "Total - Sex",
-         labour == "Employment rate (%)",
-         education == "Total - Highest certificate, diploma or degree")
-employ_canada_2021 <- df_2021 %>% 
-  filter(birthplace == "  Born in Canada",
-         gender == "Total - Gender",
-         labour == "Employment rate (%)",
-         education == "Total - Highest certificate, diploma or degree")
-employ_stats <- bind_rows(employ_2021, employ_2011, employ_canada_2011, employ_canada_2021)
-
-#get some more specific stats
-african_employ_2011 <- df_2011 %>%
-  filter(as.integer(birthplace) == 2:7,
-       labour == "Employment rate (%)")
-
-african_employ_2021 <- df_2021 %>% 
-  filter(as.integer(birthplace) == 2:7,
-         labour == "Employment rate (%)")
-
-canada_employ_2011 <- df_2011 %>% 
-  filter(as.integer(birthplace) == 8:10,
-         labour == "Employment rate (%)")
-
-canada_employ_2021 <- df_2021 %>% 
-  filter(as.integer(birthplace) == 8:10,
-         labour == "Employment rate (%)")
-
-employ_stats_combine <- bind_rows(african_employ_2011, african_employ_2021, canada_employ_2011, canada_employ_2021)
-
-
+# filter(as.integer(birthplace) == 4:9,
+#        ))
