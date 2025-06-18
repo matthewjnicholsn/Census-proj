@@ -69,19 +69,7 @@ employ_canada_2021 <- df_2021 %>%
          education == "Total - Highest certificate, diploma or degree")
 employ_stats <- bind_rows(employ_2021, employ_2011, employ_canada_2011, employ_canada_2021)
 
-employ_ac_2011 <- df_2011 %>% 
-  filter(
-         birthplace == c("    Africa","      Western Africa", "      Eastern Africa", 
-                         "      Northern Africa", "      Central Africa", "      Southern Africa" ),
-         labour == "Employment rate (%)",
-         education == "Total - Highest certificate, diploma or degree"
-  )
-
-african_employ <- df_2011 %>% 
-  filter(as.integer(birthplace) == 2:7,
-         labour == "Employment rate (%)",
-         education == "Total - Highest certificate, diploma or degree")
-
+#get some more specific stats
 african_employ_2011 <- df_2011 %>%
   filter(as.integer(birthplace) == 2:7,
        labour == "Employment rate (%)")
@@ -89,3 +77,15 @@ african_employ_2011 <- df_2011 %>%
 african_employ_2021 <- df_2021 %>% 
   filter(as.integer(birthplace) == 2:7,
          labour == "Employment rate (%)")
+
+canada_employ_2011 <- df_2011 %>% 
+  filter(as.integer(birthplace) == 8:10,
+         labour == "Employment rate (%)")
+
+canada_employ_2021 <- df_2021 %>% 
+  filter(as.integer(birthplace) == 8:10,
+         labour == "Employment rate (%)")
+
+employ_stats_combine <- bind_rows(african_employ_2011, african_employ_2021, canada_employ_2011, canada_employ_2021)
+
+
