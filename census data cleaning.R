@@ -50,6 +50,7 @@ for(i in seq_along(data)) {
       mutate(counts = as.numeric(counts)) %>% 
       pivot_wider(names_from = labour, values_from = counts, 
                   values_fill = list(counts = 0)) %>% 
+      rename(low_income = "In low income in 2010 based on after-tax low-income measure (LIM-AT)") %>% 
       mutate(birthplace = as.factor(birthplace)) %>% 
       mutate(across(where(is.character), trimws)) 
 
@@ -68,6 +69,8 @@ for(i in seq_along(data)) {
       mutate(counts = as.numeric(counts)) %>% 
       pivot_wider(names_from = labour, values_from = counts, 
                   values_fill = list(counts = 0)) %>% 
+      rename(low_income = "Prevalence of low income (LIM-AT) (%)") %>% 
+      rename(overqual = `Overqualification rate (based on skill level C and D)`) %>% 
       rename(education = Highest.certific) %>% 
       mutate(year = as.numeric(year)) %>% 
       mutate(birthplace = as.factor(birthplace)) %>% 
@@ -114,7 +117,7 @@ df_comb <- bind_rows(df_2011, df_2021)
 
 #convert chr var to factors
 employ_stats_2011 <- df_2011 %>% 
-  select(1:4, 9:11) %>% 
+  select(1:4, 9:11, 232) %>% 
   filter(gender == "Total - Gender",
          education == "Total - Highest certificate, diploma or degree") 
          
@@ -125,7 +128,7 @@ employ_stats_2011 <- df_2011 %>%
 
 # use grep("year", colnames(df_2021)) to get the col index for year or others
 employ_stats_2021 <- df_2021 %>% 
-  select(1:3, 205, 8:10) %>% 
+  select(1:3, 205, 8:10, 157, 201) %>% 
   filter(gender == "Total - Gender",
          education == "Total - Highest certificate, diploma or degree")
 
@@ -172,6 +175,27 @@ ggplot(combined_employ_stats,
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
+ggplot(combined_employ_stats,
+       aes(x = birthplace, y = low_income, fill = year)) +
+  geom_bar(stat = "identity", position = position_dodge(width = 0.8)) +
+  labs(title = "Low-income Rate by Birthplace (2011 vs 2021)",
+       x = "Birthplace",
+       y = "Participation Rate (%)") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+#plot overqualification rate
+
+ggplot(combined_employ_stats,
+       aes(x = birthplace, y = overqual, fill = "2021")) +
+  geom_bar(stat = "identity", position = "stack", show.legend = F) +
+  annotate('text', x = 5, y = 60, label="*Data unavailable for 2011", size = 2) +
+  labs(title = "Overqualification Rate by Birthplace (2021)",
+       x = "Birthplace",
+       y = "Overqualification Rate (%)") +
+  theme_minimal() +
+theme(axis.text.x = element_text(angle = 45, hjust = 1))
+  
 
 
 
