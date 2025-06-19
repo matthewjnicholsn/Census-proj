@@ -185,8 +185,9 @@ ggplot(combined_employ_stats,
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
 #plot overqualification rate
-
-ggplot(combined_employ_stats,
+combined_employ_stats_sub <- combined_employ_stats %>% 
+  filter(year == 2021)
+ggplot(combined_employ_stats_sub,
        aes(x = birthplace, y = overqual, fill = "2021")) +
   geom_bar(stat = "identity", position = "stack", show.legend = F) +
   annotate('text', x = 5, y = 60, label="*Data unavailable for 2011", size = 2) +
@@ -196,6 +197,5 @@ ggplot(combined_employ_stats,
   theme_minimal() +
 theme(axis.text.x = element_text(angle = 45, hjust = 1))
   
-
-
+  
 
