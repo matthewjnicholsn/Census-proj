@@ -213,7 +213,6 @@ ggplot(combined_employ_stats_sub,
 
 ##caclulate comparable overqualification measure for 2011
 
-hist(df_2011$`Skill level C and D`)
 
 df_2011_migrant <- df_2011 %>% 
   filter(birthplace == "  Born outside Canada",
@@ -231,13 +230,20 @@ df_2011_domestic <- df_2011 %>%
 # caculate overqualification for 2011 df
 df_2011 <- df_2011 %>%
   trimws(names(df_2011))
+
+####### trying to calculate overqual for 2011 by selecting c and d level columns 
+
+df_skill <-  df_2011 %>%
+  select(matches('14|15|34|44|64|65|74|75|84|94|95|66|67|86|96'))
+
 skill_cd <- c(
   "14", "15", "34", "44", "64","65", "74", "75", "84", "94", "95",
   "66", "67", "86", "96")
+
 # df_skill <- df_2011 %>%
 #   select(which(substr(names(df_2011), 1, 2) %in% skill_cd))
 
-df_skill <- df_2011 %>% 
+df_skill <- df_2011 %>%
   select(matches(skill_cd)
   )
 
