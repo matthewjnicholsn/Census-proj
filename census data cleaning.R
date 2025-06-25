@@ -148,41 +148,53 @@ combined_employ_stats <- combined_employ_stats %>%
 ggplot(combined_employ_stats, 
        aes(x = birthplace, y = `Employment rate (%)`, fill = year)) +
   geom_bar(stat = "identity", position = position_dodge(width = 0.8)) +
+  ylim(0,80) +
   labs(title = "Employment Rate by Birthplace (2011 vs 2021)",
        x = "Birthplace",
        y = "Employment Rate (%)") +
   theme_minimal() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  theme( # remove the vertical grid lines
+    panel.grid.major.x = element_blank(),
+    panel.grid.major.y = element_blank())
 
 #plot unemployment rate by birthplace for 2011 and 2021
 ggplot(combined_employ_stats, 
        aes(x = birthplace, y = `Unemployment rate (%)`, fill = year)) +
   geom_bar(stat = "identity", position = position_dodge(width = 0.8)) +
+  ylim(0,20) +
   labs(title = "Unemployment Rate by Birthplace (2011 vs 2021)",
        x = "Birthplace",
        y = "Unemployment Rate (%)") +
   theme_minimal() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  theme(
+    panel.grid.major = element_blank()
+  )
 
 #plot participation rate by birthplace for 2011 and 2021
 
 ggplot(combined_employ_stats, 
        aes(x = birthplace, y = `Participation rate (%)`, fill = year)) +
   geom_bar(stat = "identity", position = position_dodge(width = 0.8)) +
+  ylim(0,90) +
   labs(title = "Participation Rate by Birthplace (2011 vs 2021)",
        x = "Birthplace",
        y = "Participation Rate (%)") +
   theme_minimal() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  theme(panel.grid.major = element_blank())
 
 ggplot(combined_employ_stats,
        aes(x = birthplace, y = low_income, fill = year)) +
   geom_bar(stat = "identity", position = position_dodge(width = 0.8)) +
+  ylim(0,40) +
   labs(title = "Low-income Rate by Birthplace (2011 vs 2021)",
        x = "Birthplace",
        y = "Participation Rate (%)") +
   theme_minimal() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  theme(panel.grid.major = element_blank())
 
 #plot overqualification rate
 combined_employ_stats_sub <- combined_employ_stats %>% 
@@ -190,12 +202,44 @@ combined_employ_stats_sub <- combined_employ_stats %>%
 ggplot(combined_employ_stats_sub,
        aes(x = birthplace, y = overqual, fill = "2021")) +
   geom_bar(stat = "identity", position = "stack", show.legend = F) +
+  ylim(0,65) +
   annotate('text', x = 5, y = 60, label="*Data unavailable for 2011", size = 2) +
   labs(title = "Overqualification Rate by Birthplace (2021)",
        x = "Birthplace",
        y = "Overqualification Rate (%)") +
   theme_minimal() +
-theme(axis.text.x = element_text(angle = 45, hjust = 1))
-  
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  theme(panel.grid.major = element_blank())
+
+##caclulate comparable overqualification measure for 2011
+
+hist(df_2011$`Skill level C and D`)
+
+df_2011_migrant <- df_2011 %>% 
+  filter(birthplace == "  Born outside Canada",
+         gender == "Total - Gender",
+         education == "Total - Highest certificate, diploma or degree") %>% 
+  select(c("birthplace", "Skill level C and D", "gender", "education"))
   
 
+df_2011_domestic <- df_2011 %>% 
+    filter(birthplace == "  Born in Canada",
+           gender == "Total - Gender",
+           education == "Total - Highest certificate, diploma or degree") %>% 
+  select(c("birthplace", "Skill level C and D"))
+
+# caculate overqualification for 2011 df
+df_2011 <- df_2011 %>%
+  trimws(names(df_2011))
+skill_cd <- c(
+  "14", "15", "34", "44", "64","65", "74", "75", "84", "94", "95",
+  "66", "67", "86", "96")
+# df_skill <- df_2011 %>%
+#   select(which(substr(names(df_2011), 1, 2) %in% skill_cd))
+
+df_skill <- df_2011 %>% 
+  select(matches(skill_cd)
+  )
+
+
+## would like to also write tables 
