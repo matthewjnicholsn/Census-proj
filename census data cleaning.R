@@ -145,9 +145,9 @@ combined_employ_stats <- combined_employ_stats %>%
   filter(!grepl("Total", birthplace))
 
 #plot employment rate by birthplace for 2011 and 2021
-ggplot(combined_employ_stats, 
+p1 <- ggplot(combined_employ_stats, 
        aes(x = birthplace, y = `Employment rate (%)`, fill = year)) +
-  geom_bar(stat = "identity", position = position_dodge(width = 0.8)) +
+  geom_bar(stat = "identity", position = "dodge") +
   ylim(0,80) +
   labs(title = "Employment Rate by Birthplace (2011 vs 2021)",
        x = "Birthplace",
@@ -157,11 +157,14 @@ ggplot(combined_employ_stats,
   theme( # remove the vertical grid lines
     panel.grid.major.x = element_blank(),
     panel.grid.major.y = element_blank())
+plot(p1)
+
+ggsave("employ_rate.pdf", plot = last_plot(), device = "pdf")
 
 #plot unemployment rate by birthplace for 2011 and 2021
-ggplot(combined_employ_stats, 
+p2 <- ggplot(combined_employ_stats, 
        aes(x = birthplace, y = `Unemployment rate (%)`, fill = year)) +
-  geom_bar(stat = "identity", position = position_dodge(width = 0.8)) +
+  geom_bar(stat = "identity", position = "dodge") +
   ylim(0,20) +
   labs(title = "Unemployment Rate by Birthplace (2011 vs 2021)",
        x = "Birthplace",
@@ -171,12 +174,14 @@ ggplot(combined_employ_stats,
   theme(
     panel.grid.major = element_blank()
   )
+plot(p2)
+ggsave("unemploy_rate.pdf", plot = last_plot(), device = "pdf")
 
 #plot participation rate by birthplace for 2011 and 2021
 
-ggplot(combined_employ_stats, 
+p3 <- ggplot(combined_employ_stats, 
        aes(x = birthplace, y = `Participation rate (%)`, fill = year)) +
-  geom_bar(stat = "identity", position = position_dodge(width = 0.8)) +
+  geom_bar(stat = "identity", position = "dodge") +
   ylim(0,90) +
   labs(title = "Participation Rate by Birthplace (2011 vs 2021)",
        x = "Birthplace",
@@ -184,10 +189,13 @@ ggplot(combined_employ_stats,
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
   theme(panel.grid.major = element_blank())
+plot(p3)
+ggsave("participation_rate.pdf", plot = last_plot(), device = "pdf")
 
-ggplot(combined_employ_stats,
+
+p4 <- ggplot(combined_employ_stats,
        aes(x = birthplace, y = low_income, fill = year)) +
-  geom_bar(stat = "identity", position = position_dodge(width = 0.8)) +
+  geom_bar(stat = "identity", position = "dodge") +
   ylim(0,40) +
   labs(title = "Low-income Rate by Birthplace (2011 vs 2021)",
        x = "Birthplace",
@@ -195,11 +203,14 @@ ggplot(combined_employ_stats,
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
   theme(panel.grid.major = element_blank())
+plot(p4)
+ggsave("lowincome_rate.pdf", plot = last_plot(), device = "pdf")
+
 
 #plot overqualification rate
 combined_employ_stats_sub <- combined_employ_stats %>% 
   filter(year == 2021)
-ggplot(combined_employ_stats_sub,
+p5 <- ggplot(combined_employ_stats_sub,
        aes(x = birthplace, y = overqual, fill = "2021")) +
   geom_bar(stat = "identity", position = "stack", show.legend = F) +
   ylim(0,65) +
@@ -210,42 +221,49 @@ ggplot(combined_employ_stats_sub,
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
   theme(panel.grid.major = element_blank())
+plot(p5)
+ggsave("overqual_rate.pdf", plot = last_plot(), device = "pdf")
 
-##caclulate comparable overqualification measure for 2011
+
+##caclulate  overqualification measure for 2011 and 2021
 
 
-df_2011_migrant <- df_2011 %>% 
-  filter(birthplace == "  Born outside Canada",
-         gender == "Total - Gender",
-         education == "Total - Highest certificate, diploma or degree") %>% 
-  select(c("birthplace", "Skill level C and D", "gender", "education"))
-  
+# List your dataframes and output names
+dfs <- list(df_2011, df_2021)
+output_names <- c("df_overqualification_2011", "df_overqualification_2021")
 
-df_2011_domestic <- df_2011 %>% 
-    filter(birthplace == "  Born in Canada",
-           gender == "Total - Gender",
-           education == "Total - Highest certificate, diploma or degree") %>% 
-  select(c("birthplace", "Skill level C and D"))
-
-# caculate overqualification for 2011 df
-df_2011 <- df_2011 %>%
-  trimws(names(df_2011))
-
-####### trying to calculate overqual for 2011 by selecting c and d level columns 
-
-df_skill <-  df_2011 %>%
-  select(matches('14|15|34|44|64|65|74|75|84|94|95|66|67|86|96'))
-
+# Skill C and D code prefixes and regex
 skill_cd <- c(
-  "14", "15", "34", "44", "64","65", "74", "75", "84", "94", "95",
-  "66", "67", "86", "96")
+  "14 ", "15 ", "34 ", "44 ", "64 ", "65 ", "74 ", "75 ", "84 ", "94 ", "95 ",
+  "66 ", "67 ", "86 ", "96 "
+)
+regex_skill <- paste0("^(", paste(skill_cd, collapse = "|"), ")")
 
-# df_skill <- df_2011 %>%
-#   select(which(substr(names(df_2011), 1, 2) %in% skill_cd))
-
-df_skill <- df_2011 %>%
-  select(matches(skill_cd)
-  )
-
+for (i in seq_along(dfs)) {
+  df <- dfs[[i]]
+  names(df) <- trimws(names(df))
+  
+  df_skill <- df %>%
+    select(c(birthplace, gender, education, matches(regex_skill))) %>%
+    mutate(row_sum = rowSums(across(where(is.numeric)))) %>%
+    rename("low_skill" = "row_sum") %>%
+    select(birthplace, gender, education, low_skill)
+  
+  df_filtered <- df_skill %>%
+    filter(
+      gender == "Total - Gender",
+      education %in% c("Bachelor's degree or higher", "Total - Highest certificate, diploma or degree")
+    )
+  
+  df_overqualification <- df_filtered %>%
+    group_by(birthplace, gender) %>%
+    reframe(
+      overqualification_rate = 100 * low_skill[education == "Bachelor's degree or higher"] /
+        low_skill[education == "Total - Highest certificate, diploma or degree"],
+      .groups = "drop"
+    )
+  
+  assign(output_names[i], df_overqualification)
+}
 
 ## would like to also write tables 
