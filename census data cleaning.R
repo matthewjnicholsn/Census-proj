@@ -259,8 +259,9 @@ for (i in seq_along(dfs)) {
     group_by(birthplace, gender) %>%
     reframe(
       overqualification_rate = 100 * low_skill[education == "Bachelor's degree or higher"] /
-        low_skill[education == "Total - Highest certificate, diploma or degree"],
-      .groups = "drop"
+        low_skill[education == "Total - Highest certificate, diploma or degree"]
+      # ,
+      # .groups = "drop"
     )
   
   assign(output_names[i], df_overqualification)
