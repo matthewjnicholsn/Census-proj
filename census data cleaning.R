@@ -231,7 +231,10 @@ regex_skill <- paste0("^(", paste(skill_cd, collapse = "|"), ")")
     reframe(
       overqualification_rate = 100 * low_skill[education == "Bachelor's degree or higher"] /
         low_skill[education == "Total - Highest certificate, diploma or degree"]
-    )
+    ) 
+  
+  df_overqualification_2011 <- df_overqualification_2011 %>% 
+    mutate(year = 2011)
   
 # For 2021
   #still whitespace in names for some reason so trimming again
@@ -254,6 +257,25 @@ regex_skill <- paste0("^(", paste(skill_cd, collapse = "|"), ")")
     reframe(
       overqualification_rate = 100 * low_skill[education == "Bachelor’s degree or higher"] /
         low_skill[education == "Total - Highest certificate, diploma or degree"]
-    )
+    ) 
   
-## would like to also write tables 
+  df_overqualification_2021 <- df_overqualification_2021 %>%
+    mutate(year = 2021)
+
+
+  
+#plot REAL overqualification
+  combined_overqual <- bind_rows(df_overqualification_2011, df_overqualification_2021)
+  
+  p6 <- ggplot(combined_overqual,
+               aes(x = birthplace, y = overqualification_rate, fill = year)) +
+    geom_bar(stat = "identity", position = "dodge") +
+    ylim(0,40) +
+    labs(title = "Overqualification Rate by Birthplace (2011 vs. 2021)",
+         x = "Birthplace",
+         y = "Overqualification Rate (%)") +
+    theme_minimal() +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+    theme(panel.grid.major = element_blank())
+  plot(p6)
+  ggsave("overqual_rate_2011.pdf", plot = last_plot(), device = "pdf")
