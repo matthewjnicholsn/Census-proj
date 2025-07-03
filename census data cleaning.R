@@ -4,6 +4,11 @@ library(dplyr)
 library(ggplot2)
 library(stringr)
 
+
+#load in our data
+df_2011 <- read.csv("datatable2011.csv")
+df_2021 <- read.csv("datatable2021.csv")
+
 #fix names of birthplace
 mapping <- data.frame(
   birthplace_2011 = c("Total - Place of birth of respondent", "Born in Canada", 
@@ -13,40 +18,25 @@ mapping <- data.frame(
   birthplace_2021 = c("Total - Place of birth", "Born in Canada", 
                       "Born outside Canada", "Africa", "Western Africa", 
                       "Eastern Africa", "Northern Africa", "Central Africa", 
-                      "Southern Africa", NA)  # NA for "Africa, n.i.e."
+                      "Southern Africa", "Africa, n.i.e.")  # NA for "Africa, n.i.e."
 )
+
 #fix names of gender
 mapping2 <- data.frame(
   gender_2011 = c("Total - Sex", "Male", "Female"),
   gender_2021 = c("Total - Gender", "Men+", "Women+")
 )
 
-data <- c("datatable2011.csv", "datatable2021.csv")
+#tidy the data 
 
-for(i in seq_along(data)) {
-  # get year from filename
-  year <- substr(data[i], 10, 13)  
-  
-  # read file
-  df <- read.csv(data[i])
-  
-  
-  
-  df <- df %>% 
-    mutate_if(is.character, ~ iconv(., from = "UTF-8", to = "UTF-8"))
-  
-  
-  
-  # rename vars
-  if (year == "2011") {
-    df <- df %>% 
+    df_2011 <- df_2011 %>% 
       rename(gender = Sex..3.) %>% 
       rename(birthplace = Place.of.birth) %>% 
       rename(labour = Selected.charact) %>% 
       filter(!str_detect(labour, "Total")) %>% 
       rename(counts = Canada) %>% 
       rename(education = Highest.certif) %>% 
-      mutate(year = as.numeric(year)) %>% 
+      mutate(year = as.numeric(2011)) %>% 
       mutate(counts = as.numeric(counts)) %>% 
       pivot_wider(names_from = labour, values_from = counts, 
                   values_fill = list(counts = 0)) %>% 
@@ -56,11 +46,7 @@ for(i in seq_along(data)) {
 
   
     
-    # #trying to remove the non printable characters
-    # df$labour <- gsub("[^[:print:]]", "", df$labour)
-    
-  } else if (year == "2021") {
-    df <- df %>% 
+    df_2021 <- df_2021 %>% 
       rename(gender = Gender..3.) %>%  # different naming for 2021
       rename(birthplace = Place.of.Birth) %>% 
       rename(labour = Selected.charact) %>% 
@@ -72,31 +58,20 @@ for(i in seq_along(data)) {
       rename(low_income = "Prevalence of low income (LIM-AT) (%)") %>% 
       rename(overqual = `Overqualification rate (based on skill level C and D)`) %>% 
       rename(education = Highest.certific) %>% 
-      mutate(year = as.numeric(year)) %>% 
-      mutate(birthplace = as.factor(birthplace)) %>% 
+      mutate(year = as.numeric(2021)) %>% 
+      mutate(birthplace = as.character(birthplace)) %>% 
       mutate(across(where(is.character), trimws)) %>% 
       mutate(education = ifelse(is.na(education),"  Bachelor's degree or higher",
                                 education)) #this is to fix the NA's by coercion error
-    
-    
-    # #trying to remove the non printable characters
-    # df$labour <- gsub("[^[:print:]]", "", df$labour)
-    
-    
-  }
-  
-  # give df a year
-  assign(paste0("df_", year), df)
-}
 
 #fix naming of birthplace for 2011 
 df_2011 <- df_2011 %>% 
   left_join(mapping, by = c("birthplace" = "birthplace_2011")) %>% 
   mutate(birthplace = coalesce(birthplace_2021, birthplace)) %>% 
   select(-birthplace_2021) %>% 
-  mutate(birthplace = as.factor(birthplace)) %>% 
-  mutate(across(where(is.character), trimws)) %>% 
-  filter(!(birthplace == "      Africa, n.i.e."))
+  mutate(birthplace = as.character(birthplace)) %>%
+  mutate(across(where(is.character), trimws)) %>%
+  filter(!(birthplace == "Africa, n.i.e."))
 
 
 
@@ -227,10 +202,7 @@ ggsave("overqual_rate.pdf", plot = last_plot(), device = "pdf")
 
 ##caclulate  overqualification measure for 2011 and 2021
 
-
-# List your dataframes and output names
-dfs <- list(df_2011, df_2021)
-output_names <- c("df_overqualification_2011", "df_overqualification_2021")
+#for 2011
 
 # Skill C and D code prefixes and regex
 skill_cd <- c(
@@ -239,32 +211,49 @@ skill_cd <- c(
 )
 regex_skill <- paste0("^(", paste(skill_cd, collapse = "|"), ")")
 
-for (i in seq_along(dfs)) {
-  df <- dfs[[i]]
-  names(df) <- trimws(names(df))
+ #still whitespace in names for some reason so trimming again
+  names(df_2011) <- trimws(names(df_2011))
   
-  df_skill <- df %>%
+  df_skill_2011 <- df_2011 %>%
     select(c(birthplace, gender, education, matches(regex_skill))) %>%
     mutate(row_sum = rowSums(across(where(is.numeric)))) %>%
     rename("low_skill" = "row_sum") %>%
     select(birthplace, gender, education, low_skill)
   
-  df_filtered <- df_skill %>%
+  df_filtered_2011 <- df_skill_2011 %>%
     filter(
       gender == "Total - Gender",
       education %in% c("Bachelor's degree or higher", "Total - Highest certificate, diploma or degree")
     )
   
-  df_overqualification <- df_filtered %>%
+  df_overqualification_2011 <- df_filtered_2011 %>%
     group_by(birthplace, gender) %>%
     reframe(
       overqualification_rate = 100 * low_skill[education == "Bachelor's degree or higher"] /
         low_skill[education == "Total - Highest certificate, diploma or degree"]
-      # ,
-      # .groups = "drop"
     )
   
-  assign(output_names[i], df_overqualification)
-}
-
+# For 2021
+  #still whitespace in names for some reason so trimming again
+  names(df_2021) <- trimws(names(df_2021))
+  
+  df_skill_2021 <- df_2021 %>%
+    select(c(birthplace, gender, education, matches(regex_skill))) %>%
+    mutate(row_sum = rowSums(across(where(is.numeric)))) %>%
+    rename("low_skill" = "row_sum") %>%
+    select(birthplace, gender, education, low_skill)
+  
+  df_filtered_2021 <- df_skill_2021 %>%
+    filter(
+      gender == "Total - Gender",
+      education %in% c("Bachelor’s degree or higher", "Total - Highest certificate, diploma or degree") 
+    )
+  
+  df_overqualification_2021 <- df_filtered_2021 %>%
+    group_by(birthplace, gender) %>%
+    reframe(
+      overqualification_rate = 100 * low_skill[education == "Bachelor’s degree or higher"] /
+        low_skill[education == "Total - Highest certificate, diploma or degree"]
+    )
+  
 ## would like to also write tables 
