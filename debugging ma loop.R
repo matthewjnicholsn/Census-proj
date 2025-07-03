@@ -21,10 +21,10 @@ regex_skill <- paste0("^(", paste(skill_cd, collapse = "|"), ")")
   
   df_filtered <- df_skill_2021 %>%
     filter(
-      birthplace == c("Born in Canada", "Born outside Canada", "Africa", "Western Africa", "Eastern Africa",
+      birthplace %in% c("Born in Canada", "Born outside Canada", "Africa", "Western Africa", "Eastern Africa",
                       "Northern Africa", "Central Africa","Southern Africa"),
-      gender == "Total - Gender",
-      education == c("Bachelor’s degree or higher", "Total - Highest certificate, diploma or degree")
+      # gender == "Total - Gender",
+      education %in% c("Bachelor’s degree or higher", "Total - Highest certificate, diploma or degree")
     )
   
   df_overqualification <- df_filtered %>%
