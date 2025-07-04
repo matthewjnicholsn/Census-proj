@@ -1,0 +1,64 @@
+\documentclass[12pt]{article}
+\usepackage{geometry}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{hyperref}
+\geometry{letterpaper}
+
+\title{Employment outcomes for African immigrant Canadians}
+\author{Matthew Nicholson}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section*{Introduction}
+In this report I will summarize the findings of a brief analysis of two custom data tables from the Canadian census survey. The tables were extracted from the 2011 and 2021 censuses. The focus of this analysis was the labour market outcomes of African immigrants in Canada over the ten-year time period from 2011-2021. The primary outcomes measured were employment rate, unemployment rate, participation rate, low-income rate, and over-qualification rate. These metrics were selected primarily for their availability in both 2011 and 2021 censuses, as well as for their importance in measuring labour market trends. Employment rate is defined as followed by Statistics Canada: ``The employment rate is the number of persons employed expressed as a percentage of the population 15 years of age and over. The employment rate for a particular group (age, gender, marital status, etc.) is the number employed in that group expressed as a percentage of the population for that group. Estimates are percentages, rounded to the nearest tenth''. While unemployment rate would be the proportion of the population not currently employed during the census period, expressed as a percentage. Similarly, participation rate is expressed as the proportion of labour market participants, meaning those who are employed \textbf{or} actively seeking employment. Low-income rate is calculated as the proportion of the population residing in the lowest income bracket. Finally, over-qualification rate is calculated by taking the proportion of labour market participants with a bachelor's degree or higher who are employed in sectors requiring no more than a bachelor's degree. This rate is only calculated for highly-skilled labour market participants, and thus may lack precision in measuring over-qualification among lower-skilled workers.
+
+\section*{Data analysis}
+
+The following section will present the results of the data analysis. All analysis was done in R, using the RStudio IDE. The data tables were requested through the StatsCan custom tabulations service. The tables were extracted using the StatsCan Beyond 20/20 Professional Browser. All scripts are available on GitHub in the following repository: \url{https://github.com/matthewjnicholsn/Census-proj}. \\
+
+A standard process was used for all data and can be described as follows: tidy, harmonize, analyze, and visualize. Since the data in custom tables comes as cross-tabulated data, once the data was imported to R as a data frame (matrix) it needed to be transposed. This is because in order for data to be tidy, each variable must have one column, and each observation must have one row. Then, the character encoding was set to UTF-8 to prevent mismatch errors. Once the data was tidied, differences between the 2011 and 2021 census formatting were harmonized in order for pooled and cross-sectional analysis to be possible between the two years. Following this, a standard data cleaning/processing downward pipeline was used to select and rename variables of interest. Some employment measures had to be calculated, as they were not supplied or were misrepresented in the custom table. For example, over-qualification rate as it was represented in the table was not in line with the over-qualification rates reported in StatsCan census reports from those years, and thus it was calculated from scratch. Other measures like employment rate were simply filtered and visualized. 
+
+\section*{Figures}
+The following section will present the figures produced in order to visualize the selected data. All figures were made using the ggplot2 package in R.
+\begin{figure}[h!]
+    \centering
+   \includegraphics[width=\linewidth]{../Desktop/Screenshot_2025-07-04_at_6.55.08 PM.png}
+    \caption{Employment rates of Canadians by birthplace, gender, and year (2011-2021). In this figure, it is clear that while employment rates have fallen for the Canadian-born population between 2011 and 2021, they have risen for the African-born population, with region-dependent trends. Men consistently exhibit higher employment rates than women across all birthplace categories and years. African-born men and women have lower employment rates than their Canadian-born counterparts, though the gap narrows somewhat in 2021. Regional variation among African subgroups is evident, with Southern and Western Africa showing increasing employment rates for both genders over the decade.}
+\end{figure}
+
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=\linewidth]{../Desktop/Screenshot_2025-07-04_at_6.56.08 PM.png}
+    \caption{Unemployment rates of Canadians by birthplace, gender, and year (2011-2021). African-born women consistently report the highest unemployment rates, particularly in Central, Eastern, and Northern Africa, with rates exceeding 15\% in some cases. While unemployment rates for men and women have declined or remained stable for most groups over the decade, a persistent gap remains between African-born and Canadian-born populations.}
+\end{figure}
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=\linewidth]{../Desktop/Screenshot_2025-07-04_at_6.56.19 PM.png}
+    \caption{Labour force participation rates by birthplace, gender, and year (2011-2021. The figure shows that men participate at higher rates than women across all birthplace categories and years, with Canadian-born and Southern African-born men showing the highest participation. African-born women, particularly from Central and Eastern Africa, have the lowest participation rates, though there have been modest increases from 2011 to 2021. There are clear gendered and regional predictors for labour force participation among African immigrants in Canada, with some improvement between 2011 and 2021, but with ongoing disparities.}
+\end{figure}
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=\linewidth]{../Desktop/Screenshot_2025-07-04_at_6.56.30 PM.png}
+    \caption{Percentage of low-income individuals by birthplace, gender, and year (2011-2021). This figure shows that African-born men and women consistently experience higher low-income rates compared to Canadian-born individuals, with women from Central and Western Africa facing the highest rates, especially in 2011 (approaching 40\%). While there is a general decline in low-income rates across nearly all groups by 2021, African-born populations, particularly women, remain disproportionately affected by low-income. This data is in-line with the participation and unemployment rate data for African-born women, and shows the general increased vulnerability of this population sub-group.}
+\end{figure}
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=\linewidth]{../Desktop/Screenshot_2025-07-04_at_6.56.42 PM.png}
+    \caption{Over-qualification rates among employed individuals by birthplace, gender, and year (2011-2021). The chart reveals persistently higher over-qualification rates among African-born immigrants compared to Canadian-born and other foreign-born groups in both years, with the highest rates observed for those from Western and Northern Africa. Over-qualification has increased for nearly all African subregions from 2011 to 2021, especially in Western Africa, where the rate surpassed 35\% in 2021. In contrast, Canadian-born individuals consistently show the lowest rates of over-qualification. This figure demonstrates the outcomes associated with lack of recognition of foreign credentials and integrating highly educated African immigrants into appropriately high-skilled employment.}
+\end{figure}
+
+\clearpage
+\section*{Conclusion}
+
+This analysis of Canadian census data from 2011 and 2021 reveals ongoing disparities in labour market outcomes for African immigrant Canadians. While there has been some progress, in-line with broader population level trends, such as rising employment rates and declining low-income rates among African-born populations, inequalities remain with the Canadian-born population. African-born women continue to face higher unemployment, lower participation, and greater risk of low income and over-qualification. 
+
+The consistent high over-qualification rates for African-born immigrants are evidence of a nation-wide lack of recognition of foreign credentials and the failure to support the integration and inclusion of highly skilled newcomers into roles that match their education and experience. This mis-match is deleterious to the lives of African immigrants, who come to Canada seeking better lives and opportunities. Although some improvements are evident over the decade between 2011 and 2021, the data points to the ongoing need for targeted policies and programs to support economic inclusion  for African immigrants, especially women and those from specific subregions. 
+
+\end{document}
