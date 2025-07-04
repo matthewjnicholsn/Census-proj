@@ -3,8 +3,13 @@ library(tidyr)
 library(dplyr)
 library(ggplot2)
 library(stringr)
-
-
+library(showtext)
+library(sysfonts)
+# Add Computer Modern font (adjust path as needed)
+# For many systems, you may need to download and provide the path to cmunrm.ttf
+font_add("CMU Serif", regular = "/Users/matthewnicholson/Downloads/computer-modern/cmunrm.ttf")
+showtext_auto()
+theme_set(theme_minimal(base_family = "CMU Serif"))
 #load in our data
 df_2011 <- read.csv("datatable2011.csv")
 df_2021 <- read.csv("datatable2021.csv")
@@ -127,14 +132,14 @@ p1 <- ggplot(combined_employ_stats,
   labs(title = "Employment Rate by Birthplace (2011 vs 2021)",
        x = "Birthplace",
        y = "Employment Rate (%)") +
-  theme_minimal() +
+  theme_minimal(base_family = "CMU Serif") +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
   theme( # remove the vertical grid lines
     panel.grid.major.x = element_blank(),
     panel.grid.major.y = element_blank())
 plot(p1)
 
-ggsave("employ_rate.pdf", plot = last_plot(), device = "pdf")
+ggsave("employ_rate.png", plot = last_plot(), device = "png")
 
 #plot unemployment rate by birthplace for 2011 and 2021
 p2 <- ggplot(combined_employ_stats, 
@@ -144,13 +149,13 @@ p2 <- ggplot(combined_employ_stats,
   labs(title = "Unemployment Rate by Birthplace (2011 vs 2021)",
        x = "Birthplace",
        y = "Unemployment Rate (%)") +
-  theme_minimal() +
+  theme_minimal(base_family = "CMU Serif") +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
   theme(
     panel.grid.major = element_blank()
   )
 plot(p2)
-ggsave("unemploy_rate.pdf", plot = last_plot(), device = "pdf")
+ggsave("unemploy_rate.png", plot = last_plot(), device = "png")
 
 #plot participation rate by birthplace for 2011 and 2021
 
@@ -161,11 +166,11 @@ p3 <- ggplot(combined_employ_stats,
   labs(title = "Participation Rate by Birthplace (2011 vs 2021)",
        x = "Birthplace",
        y = "Participation Rate (%)") +
-  theme_minimal() +
+  theme_minimal(base_family = "CMU Serif") +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
-  theme(panel.grid.major = element_blank())
+  theme(panel.grid.major = element_blank()) 
 plot(p3)
-ggsave("participation_rate.pdf", plot = last_plot(), device = "pdf")
+ggsave("participation_rate.png", plot = last_plot(), device = "png")
 
 
 p4 <- ggplot(combined_employ_stats,
@@ -175,11 +180,11 @@ p4 <- ggplot(combined_employ_stats,
   labs(title = "Low-income Rate by Birthplace (2011 vs 2021)",
        x = "Birthplace",
        y = "Participation Rate (%)") +
-  theme_minimal() +
+  theme_minimal(base_family = "CMU Serif")
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
-  theme(panel.grid.major = element_blank())
+  theme(panel.grid.major = element_blank()) +
 plot(p4)
-ggsave("lowincome_rate.pdf", plot = last_plot(), device = "pdf")
+ggsave("lowincome_rate.png", plot = last_plot(), device = "png")
 
 
 #plot overqualification rate
@@ -193,11 +198,11 @@ p5 <- ggplot(combined_employ_stats_sub,
   labs(title = "Overqualification Rate by Birthplace (2021)",
        x = "Birthplace",
        y = "Overqualification Rate (%)") +
-  theme_minimal() +
+  theme_minimal(base_family = "CMU Serif") +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
   theme(panel.grid.major = element_blank())
 plot(p5)
-ggsave("overqual_rate.pdf", plot = last_plot(), device = "pdf")
+ggsave("overqual_rate.png", plot = last_plot(), device = "png")
 
 
 ##caclulate  overqualification measure for 2011 and 2021
@@ -265,7 +270,9 @@ regex_skill <- paste0("^(", paste(skill_cd, collapse = "|"), ")")
 
   
 #plot REAL overqualification
-  combined_overqual <- bind_rows(df_overqualification_2011, df_overqualification_2021)
+  combined_overqual <- bind_rows(df_overqualification_2011, df_overqualification_2021) 
+  combined_overqual <- combined_overqual %>% 
+    mutate(year = as.factor(year)) #need this or ggplot won't dodge correctly and tries to create a continuous scale
   
   p6 <- ggplot(combined_overqual,
                aes(x = birthplace, y = overqualification_rate, fill = year)) +
@@ -274,8 +281,98 @@ regex_skill <- paste0("^(", paste(skill_cd, collapse = "|"), ")")
     labs(title = "Overqualification Rate by Birthplace (2011 vs. 2021)",
          x = "Birthplace",
          y = "Overqualification Rate (%)") +
-    theme_minimal() +
+    theme_minimal(base_family = "CMU Serif")
     theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
     theme(panel.grid.major = element_blank())
   plot(p6)
-  ggsave("overqual_rate_2011.pdf", plot = last_plot(), device = "pdf")
+  ggsave("overqual_rate_2011.png", plot = last_plot(), device = "png")
+
+  
+  
+## not plot stats with gender
+  
+  #convert chr var to factors
+  gender_stats_2011 <- df_2011 %>% 
+    select(1:4, 9:11, 232) %>% 
+    filter(
+           education == "Total - Highest certificate, diploma or degree") 
+  
+  # birthplace == c("Born in Canada", "Africa", "Western Africa", 
+  #                 "Eastern Africa", "Northern Africa", "Central Africa", 
+  #                 "Southern Africa"),
+  # )
+  
+  # use grep("year", colnames(df_2021)) to get the col index for year or others
+  gender_stats_2021 <- df_2021 %>% 
+    select(1:3, 205, 8:10, 157, 201) %>% 
+    filter(
+           education == "Total - Highest certificate, diploma or degree")
+  
+  
+  combined_gender_stats <- bind_rows(gender_stats_2011, gender_stats_2021)
+  # Filter to remove totals and keep only gender breakdowns
+  employment_gender <- combined_gender_stats %>%
+    filter(gender != "Total - Gender") %>%
+    filter(!grepl("Total", birthplace)) %>%
+    mutate(year = as.factor(year))
+  
+  # Plot
+  p_emp_gender <- ggplot(employment_gender, 
+                         aes(x = birthplace, y = `Employment rate (%)`, fill = gender)) +
+    geom_bar(stat = "identity", position = "dodge") +
+    facet_wrap(~year) +
+    ylim(0, 80) +
+    labs(title = "Employment Rate by Gender and Birthplace (2011 vs 2021)",
+         x = "Birthplace",
+         y = "Employment Rate (%)") +
+    theme_minimal(base_family = "CMU Serif") +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1))
+  
+  print(p_emp_gender)
+  ggsave("employment_by_gender.png", plot = p_emp_gender, device = "png")
+ 
+   # unemployment rate plot
+  p_unemp_gender <- ggplot(employment_gender, 
+                           aes(x = birthplace, y = `Unemployment rate (%)`, fill = gender)) +
+    geom_bar(stat = "identity", position = "dodge") +
+    facet_wrap(~year) +
+    ylim(0, 20) +
+    labs(title = "Unemployment Rate by Gender and Birthplace (2011 vs 2021)",
+         x = "Birthplace", y = "Unemployment Rate (%)") +
+    theme_minimal(base_family = "CMU Serif") +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1))
+  
+  print(p_unemp_gender)
+  ggsave("unemployment_by_gender.png", plot = p_unemp_gender, device = "png")
+  
+  # participation rate plot
+  p_partic_gender <- ggplot(employment_gender,
+                            aes(x = birthplace, y = `Participation rate (%)`, fill = gender)) +
+    geom_bar(stat = "identity", position = "dodge") +
+    facet_wrap(~year) +
+    ylim(0, 90) +
+    labs(title = "Participation Rate by Gender and Birthplace (2011 vs 2021)",
+         x = "Birthplace", y = "Participation Rate (%)") +
+    theme_minimal(base_family = "CMU Serif") +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1))
+  
+  print(p_partic_gender)
+  ggsave("participation_by_gender.png", plot = p_partic_gender, device = "png")
+  
+  #low income plot
+  p_lowinc_gender <- ggplot(employment_gender,
+                           aes(x = birthplace, y = low_income, fill = gender)) +
+    geom_bar(stat = "identity", position = "dodge") +
+    facet_wrap(~year) +
+    ylim(0, 40) +
+    labs(title = "Low-Income Rate by Gender and Birthplace (2011 vs 2021)",
+         x = "Birthplace", y = "Participation Rate (%)") +
+    theme_minimal(base_family = "CMU Serif") +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1))
+  
+  print(p_lowinc_gender)
+  ggsave("lowincome_by_gender.png", plot = p_lowinc_gender, device = "png")
+  
+  #run overqual by gender
+  
+  source('Overqualification by gender.R')
